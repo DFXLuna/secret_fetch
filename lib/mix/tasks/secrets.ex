@@ -41,8 +41,18 @@ defmodule Mix.Tasks.Secrets do
 
     case resp.status do
       status when status >= 200 and status < 300 ->
-        Enum.map(resp.body["secrets"], fn %{"secretKey" => key, "secretValue" => value} ->
-          {key, value}
+        Enum.map(resp.body["secrets"], fn %{
+                                            "secretKey" => key,
+                                            "secretValue" => value,
+                                            "tags" => tags
+                                          } ->
+          case tags do
+            [] ->
+              {key, value, ""}
+
+            [tag | []] ->
+              {key, value, tag["slug"]}
+          end
         end)
 
       _ ->
@@ -53,6 +63,27 @@ defmodule Mix.Tasks.Secrets do
   defp createEnv(folder, content) do
     {:ok, cwd} = File.cwd()
     path = Path.join([cwd, folder, ".env"])
+    IO.write("Writing " <> path <> " ... ")
+
+    case File.write(path, content) do
+      {:error, :enoent} ->
+        IO.puts("errored." <> " Directory doesn't exist.")
+        :error
+
+      {:error, reason} ->
+        IO.puts("errored." <> to_string(reason))
+        :error
+
+      :ok ->
+        IO.puts("done.")
+    end
+  end
+
+  # specialization of createEnv that takes a filename, replaces - with . and makes the file with that name instead
+  defp createEnv(folder, content, filename) do
+    {:ok, cwd} = File.cwd()
+    fname = String.replace(filename, "-", ".")
+    path = Path.join([cwd, folder, fname])
     IO.write("Writing " <> path <> " ... ")
 
     case File.write(path, content) do
@@ -96,8 +127,14 @@ defmodule Mix.Tasks.Secrets do
 
         login!(client_id, client_secret)
         |> list!(path, workspace_id, workspace_env)
-        |> Enum.each(fn {path, content} ->
-          createEnv(path, content)
+        |> Enum.each(fn {path, content, filename} ->
+          case filename do
+            "" ->
+              createEnv(path, content)
+
+            _ ->
+              createEnv(path, content, filename)
+          end
         end)
     end
   end
