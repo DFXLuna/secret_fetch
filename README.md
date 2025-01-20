@@ -7,7 +7,8 @@
   - `CLIENT_SECRET`
   - `WORKSPACE_ID`
   - `WORKSPACE_ENV`
-- Run `mix secrets pull INFISICAL_PATH`
+- Build with `mix escript.build`
+- Run `./secrets pull INFISICAL_PATH`
   - It will go secret by secret in `INFISICAL_PATH` and pull the contents of each secret into an `.env` into a folder if a secret with the same name exists in infisical.
   - It does NOT run recursively
-  - You probably want `mix secrets pull /` to pull from the root of your infisical project
+  - You probably want `./secrets pull /` to pull from the root of your infisical project

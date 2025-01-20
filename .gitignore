@@ -23,3 +23,4 @@ secret_fetch-*.tar
 /tmp/
 
 .env
+secrets
