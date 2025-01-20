@@ -27,13 +27,12 @@ defmodule Mix.Tasks.Secrets do
     end
   end
 
-  @spec list!(binary(), binary()) :: :ok
-  defp list!(token, path) do
+  defp list!(token, path, workspace_id, workspace_env) do
     uri =
       "https://app.infisical.com/api/v3/secrets/raw"
       |> URI.new!()
-      |> URI.append_query(URI.encode_query(workspaceId: "a27d8691-0740-478f-842a-380ad56efa92"))
-      |> URI.append_query(URI.encode_query(environment: "dev"))
+      |> URI.append_query(URI.encode_query(workspaceId: workspace_id))
+      |> URI.append_query(URI.encode_query(environment: workspace_env))
       |> URI.append_query(URI.encode_query(secretPath: path))
 
     resp =
@@ -51,7 +50,6 @@ defmodule Mix.Tasks.Secrets do
     end
   end
 
-  @spec createEnv(binary(), binary()) :: :ok | :error
   defp createEnv(folder, content) do
     {:ok, cwd} = File.cwd()
     path = Path.join([cwd, folder, ".env"])
@@ -72,16 +70,35 @@ defmodule Mix.Tasks.Secrets do
   end
 
   @impl Mix.Task
-  def run([client_id, client_secret, path | []]) do
-    login!(client_id, client_secret)
-    |> list!(path)
-    |> Enum.each(fn {path, content} ->
-      createEnv(path, content)
-    end)
-  end
+  def run(["pull", path | []]) do
+    Hush.resolve!()
+    client_id = Application.get_env(:secrets, :client_id)
+    client_secret = Application.get_env(:secrets, :client_secret)
+    workspace_id = Application.get_env(:secrets, :workspace_id)
+    workspace_env = Application.get_env(:secrets, :workspace_env)
 
-  def run(_args) do
-    IO.puts("bad input")
-    :error
+    cond do
+      client_id == "" ->
+        IO.puts("CLIENT_ID not set")
+
+      client_secret == "" ->
+        IO.puts("CLIENT_SECRET not set")
+
+      workspace_id == "" ->
+        IO.puts("WORKSPACE_ID not set")
+
+      workspace_env == "" ->
+        IO.puts("WORKSPACE_ENV not set")
+
+      true ->
+        IO.puts("Pulling from workspace " <> workspace_id)
+        IO.puts("Pulling from env " <> workspace_env)
+
+        login!(client_id, client_secret)
+        |> list!(path, workspace_id, workspace_env)
+        |> Enum.each(fn {path, content} ->
+          createEnv(path, content)
+        end)
+    end
   end
 end
