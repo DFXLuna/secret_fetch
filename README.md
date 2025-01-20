@@ -1,21 +1,11 @@
-# SecretFetch
-
-**TODO: Add description**
-
-## Installation
-
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `secret_fetch` to your list of dependencies in `mix.exs`:
-
-```elixir
-def deps do
-  [
-    {:secret_fetch, "~> 0.1.0"}
-  ]
-end
-```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/secret_fetch>.
-
+# secrets
+- Install [elixir & mix](https://elixir-lang.org/install.html)
+- Load up environment variables / .env+readenv with
+  - `CLIENT_ID`
+  - `CLIENT_SECRET`
+  - `WORKSPACE_ID`
+  - `WORKSPACE_ENV`
+- Run `mix secrets pull INFISICAL_PATH`
+  - It will go secret by secret in `INFISICAL_PATH` and pull the contents of each secret into an `.env` into a folder if a secret with the same name exists in infisical.
+  - It does NOT run recursively
+  - You probably want `mix secrets pull /` to pull from the root of your infisical project
