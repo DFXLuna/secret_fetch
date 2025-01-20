@@ -1,5 +1,6 @@
 # secrets
 - Install [elixir & mix](https://elixir-lang.org/install.html)
+- Create or gather an infisical client_id and client_secret under access control > identities
 - Load up environment variables / .env+readenv with
   - `CLIENT_ID`
   - `CLIENT_SECRET`
